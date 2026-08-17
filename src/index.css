@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+:root {
+
+  --primary-bg: #1E3A5F;
+  --seconde-bg: #F8FAFC;
+  --navbar-bg: #5F6F52;
+  --sidebar-bg: #5F6F52;
+  --footer-bg: #5F6F52;
+
+  --primary-text: #FFFFFF;
+
+  --body-text: #111827;
+  --sec-body-text: #F8FAFC;
+  --secondory-text: #6B7280;
+
+  --nav-link: #E5E7EB;
+
+  --border-color: #E5E7EB;
+  --hover-bg: rgba(255, 255, 255, .12);
+  --active-bg: #3B82F6;
+}
+
+body.dark {
+  --primary-bg: #111827;
+  --seconde-bg: #0F172A;
+
+  --navbar-bg: #343D2F;
+  --sidebar-bg: #343D2F;
+  --footer-bg: #343D2F;
+
+  --primary-text: #F9FAFB;
+
+  --body-text: #E5E7EB;
+  --sec-body-text: #F8FAFC;
+  --secondory-text: #94A3B8;
+
+  --nav-link: #CBD5E1;
+
+  --border-color: #374151;
+  --hover-bg: rgba(255, 255, 255, .08);
+  --active-bg: #2563EB;
+}
+
+nav {
+  background-color: var(--navbar-bg);
+  color: var(--sec-body-text);
+}
+footer {
+  background-color: var(--footer-bg);
+  color: var(--sec-body-text);
+}
+aside {
+  color: var(--sec-body-text);
+  background-color: var(--sidebar-bg);
+}
+
+.login-swal-popup {
+  border: 1px solid #ccc !important;
+  border-radius: 15% !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+body {
+  background-color: var(--seconde-bg);
+  color: var(--body-text);
+}
+
+.loginPage {
+  color: white;
+}
+
+.loginPage input {
+  color: #0F172A;
+  background-color: #F9FAFB;
+}
+
+@keyframes loginButtonPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.25);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.3s ease !important;
+}
+
+button:hover {
+  transform: translateY(-3px) scale(1.05);
+  animation: loginButtonPulse 1s infinite;
+}
+
+button:active {
+  transform: translateY(0) scale(0.97);
+}
