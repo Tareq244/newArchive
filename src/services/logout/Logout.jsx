@@ -6,10 +6,13 @@ import { removeUser } from "../authService";
 
 function Logout() {
     const navigate = useNavigate();
+    const logout = "/assets/gif/logout.gif";
 
     const handleLogout = async () => {
         const result = await Swal.fire({
-            icon: "question",
+            imageUrl: logout,
+            imageWidth: 150,
+            imageHeight: 150,
             title: "Logout",
             text: "Are you sure you want to logout?",
             showCancelButton: true,
@@ -37,9 +40,9 @@ function Logout() {
     };
 
     return (
-        <button 
-        type="button"
-        onClick={handleLogout} 
+        <button
+            type="button"
+            onClick={handleLogout}
         >
             Logout
         </button>

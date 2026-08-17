@@ -3,19 +3,19 @@ import { useState } from "react";
 import { createFolder } from "../services/folderService";
 import { uploadFile } from "../services/fileService";
 
-import DarkLightMode  from "../helper/toggle/DarkLightMode";
+import DarkLightMode from "../helper/toggle/DarkLightMode";
 
 import { MenuIcon, CloseIcon, FolderPlusIcon, UploadIcon, SearchIcon, MoonIcon, ChevronDownIcon, LogoutIcon } from '../icons/Icons';
 import Logout from "../services/logout/Logout";
 
+import Swal from "sweetalert2";
 
-
-export default function Navbar({ userName, onSearch }) 
-{
+export default function Navbar({ userName, onSearch }) {
 
   const logo = "/assets/images/logo1.png";
   const avatar = "/assets/images/avatar.jpg";
-
+  const createfolder="/assets/gif/folder.gif";
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,18 +25,76 @@ export default function Navbar({ userName, onSearch })
     onSearch?.(searchTerm.trim());
   };
 
-  const handleCreateFolder = async (folderName) => {
+  // const handleCreateFolder = async (folderName) => {
+  //   try {
+  //     const result = await createFolder({
+  //       name: folderName,
+  //       parentId: currentParentId,
+  //     });
+  //     console.log("Created:", result);
+  //     // هون تعمل refresh للـ folders
+  //     // أو تضيف الفولدر الجديد مباشرة للـ state
+
+  //   } catch (error) {
+  //     console.error(error.message);
+  //   }
+  // };
+
+  const handleCreateFolder = async () => {
+    const result = await Swal.fire({
+      imageUrl: createfolder,
+      imageWidth: 150,
+      imageHeight: 150,
+      title: "Create Folder",
+      input: "text",
+      inputLabel: "Folder Name",
+      inputPlaceholder: "Enter folder name...",
+      showCancelButton: true,
+      confirmButtonText: "Create",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+
+      inputValidator: (value) => {
+        if (!value || !value.trim()) {
+          return "Please enter a folder name.";
+        }
+      },
+
+      customClass: {
+        popup: "login-swal-popup",
+      },
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    const folderName = result.value.trim();
+
     try {
-      const result = await createFolder({
+      const createdFolder = await createFolder({
         name: folderName,
         parentId: currentParentId,
       });
-      console.log("Created:", result);
-      // هون تعمل refresh للـ folders
-      // أو تضيف الفولدر الجديد مباشرة للـ state
+
+      console.log("Created:", createdFolder);
+
+      await Swal.fire({
+        icon: "success",
+        title: "Folder Created",
+        text: `"${folderName}" created successfully.`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
 
     } catch (error) {
-      console.error(error.message);
+      console.error("Create folder error:", error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: error.message || "Unable to create folder.",
+      });
     }
   };
 
