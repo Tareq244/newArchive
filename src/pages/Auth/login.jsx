@@ -3,6 +3,7 @@ import { EyeIcon, EyeOffIcon, EmailIcon } from '../../icons/Icons';
 import { useNavigate } from "react-router-dom";
 import { environment } from "../../enviroments";
 import { saveUser } from "../../services/authService";
+import Loading from "../../component/Loading";
 
 function Login() {
 
@@ -15,6 +16,7 @@ function Login() {
         rememberMe: true,
     });
 
+    const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -35,10 +37,12 @@ function Login() {
         setIsSubmitting(true);
 
         try {
+            setLoading(true);
             const response = await fetch(
                 `${environment.apiUrl}auth/signin`,
                 {
                     method: "POST",
+                    credentials: "include",
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -63,7 +67,6 @@ function Login() {
             }
 
             console.log("Login successful:", data);
-
             saveUser(data);
             navigate("/HomePage");
 
@@ -76,8 +79,11 @@ function Login() {
 
         } finally {
             setIsSubmitting(false);
+            setLoading(false);
         }
     };
+
+    
 
     return (
         <main
@@ -88,7 +94,6 @@ function Login() {
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat"
             }} >
-
             <section className="loginPage relative z-10 w-full max-w-md">
                 <h1 className="mb-8 text-center text-3xl font-light">
                     Have an account?
@@ -207,6 +212,8 @@ function Login() {
                     </a>
                 </div>
             </section>
+
+            {loading && <Loading />}
         </main>
     );
 }

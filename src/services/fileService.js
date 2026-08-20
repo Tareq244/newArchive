@@ -2,7 +2,7 @@ import { environment } from "../enviroments";
 
 const apiUrl = environment.apiUrl;
 
-export const uploadFile = async (file, parentId = null) => {
+export const uploadFile = async (file, parentId = null, description = null) => {
     const formData = new FormData();
 
     formData.append("file", file);
@@ -11,7 +11,12 @@ export const uploadFile = async (file, parentId = null) => {
         formData.append("parentId", parentId);
     }
 
-    const response = await fetch(`${apiUrl}/api/File/upload`, {
+    if (description) {
+        formData.append("description", description);
+    }
+
+
+    const response = await fetch(`${apiUrl}File/upload`, {
         method: "POST",
         body: formData,
     });

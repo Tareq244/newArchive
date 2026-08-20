@@ -9,109 +9,240 @@ import { MenuIcon, CloseIcon, FolderPlusIcon, UploadIcon, SearchIcon, MoonIcon, 
 import Logout from "../services/logout/Logout";
 
 import Swal from "sweetalert2";
+import Loading from "./Loading";
 
 export default function Navbar({ userName, onSearch }) {
 
   const logo = "/assets/images/logo1.png";
   const avatar = "/assets/images/avatar.jpg";
-  const createfolder="/assets/gif/folder.gif";
-  
+  const createfolder = "/assets/gif/folder.gif";
+  const uploadfile = "/assets/gif/file.gif";
+
+  const errimg = "/assets/gif/error.gif";
+  const success = "/assets/gif/success.gif";
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentParentId, setCurrentParentId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = (event) => {
     event.preventDefault();
     onSearch?.(searchTerm.trim());
   };
 
-  // const handleCreateFolder = async (folderName) => {
-  //   try {
-  //     const result = await createFolder({
-  //       name: folderName,
-  //       parentId: currentParentId,
-  //     });
-  //     console.log("Created:", result);
-  //     // هون تعمل refresh للـ folders
-  //     // أو تضيف الفولدر الجديد مباشرة للـ state
-
-  //   } catch (error) {
-  //     console.error(error.message);
-  //   }
-  // };
-
   const handleCreateFolder = async () => {
+    setLoading(true);
+
     const result = await Swal.fire({
       imageUrl: createfolder,
       imageWidth: 150,
       imageHeight: 150,
       title: "Create Folder",
-      input: "text",
-      inputLabel: "Folder Name",
-      inputPlaceholder: "Enter folder name...",
+      html: `
+      <input
+        id="folder-name"
+        class="swal2-input"
+        placeholder="Enter folder name..."
+      />
+      <textarea
+        id="folder-description"
+        class="swal2-textarea"
+        placeholder="Enter folder description..."
+        rows="2"
+      ></textarea>
+    `,
       showCancelButton: true,
       confirmButtonText: "Create",
       cancelButtonText: "Cancel",
       reverseButtons: true,
-
-      inputValidator: (value) => {
-        if (!value || !value.trim()) {
-          return "Please enter a folder name.";
-        }
-      },
-
       customClass: {
         popup: "login-swal-popup",
+      },
+      preConfirm: () => {
+        const name = document
+          .getElementById("folder-name")
+          .value.trim();
+
+        const description = document
+          .getElementById("folder-description")
+          .value.trim();
+
+        if (!name) {
+          Swal.showValidationMessage("Please enter a folder name.");
+          return false;
+        }
+
+        return {
+          name,
+          description,
+        };
+      },
+    });
+    if (!result.isConfirmed) {
+      setLoading(false);
+      return;
+    }
+    const { name, description } = result.value;
+    try {
+      const createdFolder = await createFolder({
+        name: name,
+        description: description || null,
+        parentId: currentParentId,
+      });
+      console.log("Created:", createdFolder);
+      await Swal.fire({
+        imageUrl: success,
+        imageWidth: 150,
+        imageHeight: 150,
+        title: "Folder Created",
+        text: `"${name}" created successfully.`,
+        timer: 1500,
+        showConfirmButton: false,
+        customClass: {
+          popup: "login-swal-popup",
+        },
+      });
+    } catch (error) {
+      console.error("Create folder error:", error);
+      Swal.fire({
+        imageUrl: errimg,
+        imageWidth: 150,
+        imageHeight: 150,
+        title: "Failed",
+        text: error.message || "Unable to create folder.",
+        customClass: {
+          popup: "login-swal-popup",
+        },
+      });
+    } finally { setLoading(false) }
+
+  };
+
+  const handleUploadFile = async () => {
+    setLoading(true);
+
+    const result = await Swal.fire({
+      imageUrl: uploadfile,
+      imageWidth: 150,
+      imageHeight: 150,
+      title: "Upload File",
+      html: `
+            <input
+                type="file"
+                id="file-input"
+                class="swal2-file"
+            />
+            <textarea
+                id="file-description"
+                class="swal2-textarea"
+                placeholder="Enter file description..."
+                rows="2"
+            ></textarea>
+        `,
+      showCancelButton: true,
+      confirmButtonText: "Upload",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      customClass: {
+        popup: "login-swal-popup",
+      },
+      preConfirm: () => {
+        const fileInput = document.getElementById("file-input");
+
+        const description = document
+          .getElementById("file-description")
+          .value.trim();
+
+        const file = fileInput.files[0];
+
+        if (!file) {
+          Swal.showValidationMessage(
+            "Please select a file."
+          );
+
+          return false;
+        }
+
+        return {
+          file,
+          description,
+        };
       },
     });
 
     if (!result.isConfirmed) {
+      setLoading(false);
       return;
     }
 
-    const folderName = result.value.trim();
+    const { file, description } = result.value;
 
     try {
-      const createdFolder = await createFolder({
-        name: folderName,
-        parentId: currentParentId,
-      });
+      const uploadedFile = await uploadFile(
+        file,
+        currentParentId,
+        description || null
+      );
 
-      console.log("Created:", createdFolder);
+      console.log("Uploaded:", uploadedFile);
 
       await Swal.fire({
-        icon: "success",
-        title: "Folder Created",
-        text: `"${folderName}" created successfully.`,
+        imageUrl: success,
+        imageWidth: 150,
+        imageHeight: 150,
+
+        title: "File Uploaded",
+
+        text: `"${file.name}" uploaded successfully.`,
+
         timer: 1500,
         showConfirmButton: false,
+
+        customClass: {
+          popup: "login-swal-popup",
+        },
       });
 
-    } catch (error) {
-      console.error("Create folder error:", error);
+      // هون ممكن تعمل refresh للملفات
+      // await loadFiles();
 
-      Swal.fire({
-        icon: "error",
+    } catch (error) {
+      console.error("Upload file error:", error);
+
+      await Swal.fire({
+        imageUrl: errimg,
+        imageWidth: 150,
+        imageHeight: 150,
+
         title: "Failed",
-        text: error.message || "Unable to create folder.",
+
+        text: error.message || "Unable to upload file.",
+
+        customClass: {
+          popup: "login-swal-popup",
+        },
       });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+  // const handleFileChange = async (e) => {
+  //   const file = e.target.files[0];
 
-    if (!file) return;
+  //   if (!file) return;
 
-    try {
-      const result = await uploadFile(file, parentId);
+  //   try {
+  //     const result = await uploadFile(file, parentId);
 
-      console.log("File uploaded:", result);
+  //     console.log("File uploaded:", result);
 
-    } catch (error) {
-      console.error("Upload error:", error.message);
-    }
-  };
+  //   } catch (error) {
+  //     console.error("Upload error:", error.message);
+  //   }
+  // };
 
   return (
     <nav className="relative w-full border-b px-4 py-2 shadow-lg">
@@ -169,7 +300,7 @@ export default function Navbar({ userName, onSearch }) {
 
             <button
               type="button"
-              onChange={handleFileChange}
+              onClick={handleUploadFile}
               title="Upload File"
               className="rounded-lg p-2 transition-transform duration-300 hover:scale-110"
             >
@@ -265,15 +396,6 @@ export default function Navbar({ userName, onSearch }) {
                     </a>
 
                     <div className="my-2 border-t" />
-
-                    {/* <button
-                      type="button"
-                      onClick={onLogout}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-opacity duration-300 hover:opacity-70"
-                    >
-                      <LogoutIcon className="size-5" />
-                      <span>Logout</span>
-                    </button> */}
                     <Logout />
                   </nav>
                 </div>
@@ -282,6 +404,7 @@ export default function Navbar({ userName, onSearch }) {
           </div>
         </div>
       </div>
+      {loading && <Loading />}
     </nav>
   );
 }
